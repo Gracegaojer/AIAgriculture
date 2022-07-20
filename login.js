@@ -48,8 +48,10 @@ function getOpenid(req, response) {
             return;
         }
         else{
-            console.log("openid got")
+            console.log("openid got:",body.openid)
+            //获得openid后返回用户
             usr = finduser(body.openid)
+
             if(usr!=null){
                 response.json({
                     errcode: 0,
@@ -65,7 +67,6 @@ function getOpenid(req, response) {
                     usrinfo: usr
                 });
             }
-            
             return;
         }
     });

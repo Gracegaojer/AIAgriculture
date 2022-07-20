@@ -4,6 +4,16 @@ const app = express();
 const path = require('path');
 const loginmethod = require('./login');
 const conf = require('./conf');
+const xhuser = require('./db/xhuser');
+
+var user = {
+    openid: 'oVtRc5ZA8i9S4qN7gG4K1lM3e_Hk',
+    name:'gaojie',
+    phone: '18801191866',
+    village: '大王楼村',
+    role:2
+};
+xhuser.insert_xhuser(user);
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
