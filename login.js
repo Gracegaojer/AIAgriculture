@@ -1,14 +1,8 @@
-/*
-errcode:
-0: no err
-1: something wrong with our backstage
-2: something wrong with tencent
-*/
-
 const request = require('request');
 const conf = require('./conf');
+const xhuser = require('./db/xhuser');
 
-function login(req,res){
+function test(req,res){
     console.log(req.query)
     res.send("hi-login")
     console.log("login!")
@@ -27,7 +21,7 @@ function finduser(openid){
     }
 }
 
-function getOpenid(req, response) {
+function getUser(req, response) {
     console.log(req.query.code);
     let code = req.query.code;
     let options = {
@@ -42,37 +36,46 @@ function getOpenid(req, response) {
             response.json({
                 errcode: 2,
                 openid: null,
-                msg: "无法获取openid",
+                msg: "无法获取openid，查看后端和微信后台",
                 list: []
             });
             return;
         }
         else{
             console.log("openid got:",body.openid)
-            //获得openid后返回用户
-            usr = finduser(body.openid)
-
-            if(usr!=null){
-                response.json({
-                    errcode: 0,
-                    openid: body.openid,
-                    msg: "success",
-                    usrinfo: usr
-                });
-            }else{
-                response.json({
-                    errcode: 1,
-                    openid: body.openid,
-                    msg: "success",
-                    usrinfo: usr
-                });
-            }
+            xhuser.exist_xhuser(body.openid).then(userId=>{
+                console.log(userId)
+                if(userId == -1){
+                    //没有该用户，插入空用户并返回，要求用户填写信息
+                    response.json({
+                        errcode: 1,//没有用户
+                        openid: body.openid,
+                        msg: "success"
+                    });
+                }
+                else{
+                    xhuser.select_xhuser(userId).then(user=>{
+                        response.json({
+                            errcode: 0,//有该用户
+                            userInfo: user,
+                            msg: "success"
+                        });
+                    }).catch(err=>{
+                        console.log("something wrong2");
+                        response("something wrong2");
+                    });
+                }
+            })
+            .catch(err=>{
+                console.log("something wrong3");
+                response("something wrong3");
+            });
             return;
         }
     });
 };
 
 module.exports = {
-    login,
-    getOpenid
+    test,
+    getUser
 };
